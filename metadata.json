@@ -1,0 +1,9 @@
+{
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "name": "OmniTool AI Studio",
+  "description": "A comprehensive AI studio with multi-modal tools and complete light/dark mode support."
+}
