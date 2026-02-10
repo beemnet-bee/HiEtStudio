@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   LayoutDashboard,
   ArrowRight,
@@ -43,7 +43,11 @@ import {
   Calculator,
   Sigma,
   Moon,
-  Sun
+  Sun,
+  X,
+  CheckCircle2,
+  AlertTriangle,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ToolType, ToolConfig } from './types';
@@ -68,6 +72,15 @@ import SentimentTool from './tools/SentimentTool';
 import DataPulseTool from './tools/DataPulseTool';
 import MathSolverTool from './tools/MathSolverTool';
 import LandingPage from './components/LandingPage';
+
+interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  type: 'info' | 'success' | 'alert';
+  read: boolean;
+}
 
 const TOOLS: ToolConfig[] = [
   { id: 'chat', name: 'AI Chat', description: 'Conversational core', icon: <Bot className="w-3.5 h-3.5" />, color: 'bg-blue-600', category: 'Text' },
@@ -221,8 +234,8 @@ const AnimatedPieChart: React.FC = () => {
   let cumulativePercent = 0;
 
   return (
-    <div className="relative w-24 h-24 flex items-center justify-center">
-      <svg viewBox="0 0 32 32" className="w-full h-full transform -rotate-90">
+    <div className="relative w-20 h-20 flex items-center justify-center">
+      <svg viewBox="0 0 40 40" className="w-full h-full transform -rotate-90">
         {segments.map((s, i) => {
           const dashArray = `${s.value} 100`;
           const dashOffset = -cumulativePercent;
@@ -230,8 +243,8 @@ const AnimatedPieChart: React.FC = () => {
           return (
             <motion.circle
               key={i}
-              cx="16"
-              cy="16"
+              cx="20"
+              cy="20"
               r="15.9155"
               fill="transparent"
               stroke={s.color}
@@ -248,14 +261,14 @@ const AnimatedPieChart: React.FC = () => {
         })}
       </svg>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-12 h-12 bg-white dark:bg-[#01040a] rounded-full border border-black/5 dark:border-white/5 flex items-center justify-center text-center">
+        <div className="w-10 h-10 bg-white dark:bg-[#01040a] rounded-full border border-black/5 dark:border-white/5 flex items-center justify-center text-center">
           {hoveredSegment !== null ? (
             <div className="animate-in fade-in zoom-in duration-300">
-               <p className="text-[6px] font-black text-slate-400 uppercase leading-none">{segments[hoveredSegment].label}</p>
-               <p className="text-[10px] font-black text-slate-900 dark:text-white leading-tight">{segments[hoveredSegment].value}%</p>
+               <p className="text-[5px] font-black text-slate-400 uppercase leading-none">{segments[hoveredSegment].label}</p>
+               <p className="text-[9px] font-black text-slate-900 dark:text-white leading-tight">{segments[hoveredSegment].value}%</p>
             </div>
           ) : (
-            <PieChartIcon className="w-4 h-4 text-slate-400 dark:text-slate-500" />
+            <PieChartIcon className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
           )}
         </div>
       </div>
@@ -269,14 +282,14 @@ const Dashboard: React.FC<{ onSelect: (id: ToolType) => void; usage: Record<stri
   const totalInvocations = (Object.values(usage) as number[]).reduce((a, b) => a + b, 0);
 
   return (
-    <motion.div variants={staggerVariants} initial="initial" animate="animate" className="space-y-6 pb-12">
+    <motion.div variants={staggerVariants} initial="initial" animate="animate" className="space-y-6 pb-12 w-full max-w-full">
       {/* Header Info */}
-      <motion.div variants={itemVariants} className="max-w-2xl space-y-2">
+      <motion.div variants={itemVariants} className="max-w-full space-y-2">
         <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/10 rounded-full border border-blue-500/10">
           <Sparkle className="w-2.5 h-2.5 text-blue-500 dark:text-blue-400" />
           <span className="text-[8px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Neural Nexus v4.1.0</span>
         </div>
-        <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+        <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">
           SYSTEM <span className="gradient-text">INTELLIGENCE.</span>
         </h1>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium max-w-lg leading-relaxed">
@@ -285,7 +298,7 @@ const Dashboard: React.FC<{ onSelect: (id: ToolType) => void; usage: Record<stri
       </motion.div>
 
       {/* Analytics Bento Grid */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 w-full">
         {/* Main Cycle Count */}
         <div className="md:col-span-2 lg:col-span-2 glass-card p-5 rounded-2xl flex flex-col justify-between h-40 group border-l-4 border-blue-500">
           <div className="flex justify-between items-start">
@@ -333,53 +346,9 @@ const Dashboard: React.FC<{ onSelect: (id: ToolType) => void; usage: Record<stri
            </div>
            <AnimatedBarChart bars={10} />
            <div className="flex justify-between text-[7px] font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">
-              <span>Engineering</span>
-              <span>Vision</span>
+              <span>Engr</span>
+              <span>Vis</span>
               <span>Creative</span>
-           </div>
-        </div>
-
-        {/* Status Indicators */}
-        <div className="md:col-span-1 lg:col-span-3 glass-card p-5 rounded-2xl flex items-center justify-between h-24">
-           <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-indigo-50/10 rounded-xl flex items-center justify-center text-indigo-500 dark:text-indigo-400">
-                 <Network className="w-5 h-5" />
-              </div>
-              <div>
-                 <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Protocol Version</p>
-                 <p className="text-xs font-black text-slate-900 dark:text-white">HIET Nexus X-9</p>
-              </div>
-           </div>
-           <div className="flex items-center gap-8">
-              <div className="text-right">
-                 <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Studio Rank</p>
-                 <p className="text-xs font-black text-indigo-600 dark:text-indigo-400">ELITE PRO</p>
-              </div>
-              <ShieldCheck className="w-6 h-6 text-indigo-500 opacity-20" />
-           </div>
-        </div>
-
-        {/* Quick Storage Status */}
-        <div className="md:col-span-1 lg:col-span-3 glass-card p-5 rounded-2xl flex items-center justify-between h-24">
-           <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-rose-50/10 rounded-xl flex items-center justify-center text-rose-500 dark:text-rose-400">
-                 <Database className="w-5 h-5" />
-              </div>
-              <div>
-                 <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Context Window</p>
-                 <p className="text-xs font-black text-slate-900 dark:text-white">2.0M Tokens</p>
-              </div>
-           </div>
-           <div className="flex gap-1.5 items-end h-8">
-              {[30, 45, 60, 20, 80].map((h, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${h}%` }}
-                  transition={{ delay: i * 0.1, repeat: Infinity, repeatType: 'reverse', duration: 1 }}
-                  className="w-1 bg-rose-500/30 rounded-full"
-                />
-              ))}
            </div>
         </div>
       </motion.div>
@@ -436,7 +405,7 @@ const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
       >
         <Zap className="w-5 h-5 fill-current" />
       </motion.div>
-      <h1 className="text-lg font-black tracking-tighter text-slate-900 dark:text-white mb-1">HI<span className="text-blue-600 dark:text-blue-500">ET</span></h1>
+      <h1 className="text-lg font-black tracking-tighter text-slate-900 dark:text-white mb-1 uppercase">HI<span className="text-blue-600 dark:text-blue-500">ET</span></h1>
       <p className="text-[7px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.6em]">Neural Access</p>
     </motion.div>
   );
@@ -447,7 +416,17 @@ const App: React.FC = () => {
   const [activeTool, setActiveTool] = useState<ToolType | 'dashboard'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>({ name: 'Operative', provider: 'guest' });
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  
+  const [notifications, setNotifications] = useState<AppNotification[]>([
+    { id: '1', title: 'Neural Link Established', message: 'HIET Core 4.1.0 synchronized with operative node.', timestamp: '2m ago', type: 'success', read: false },
+    { id: '2', title: 'Security Alert', message: 'Encryption layer updated. Zero-trust protocol active.', timestamp: '15m ago', type: 'info', read: false },
+    { id: '3', title: 'Cycle Threshold', message: 'Compute cycles reaching daily optimization peak.', timestamp: '1h ago', type: 'alert', read: true },
+  ]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('hiet_theme');
     return saved ? saved === 'dark' : false;
@@ -472,15 +451,37 @@ const App: React.FC = () => {
     localStorage.setItem('omnitool_usage_v4', JSON.stringify(usageStats));
   }, [usageStats]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    if (showNotifications) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifications]);
+
   const handleToolSelect = (id: ToolType) => {
     setUsageStats(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
     setActiveTool(id);
     setMobileMenuOpen(false);
+    setShowNotifications(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleEnterApp = () => {
     setAppState('app');
+  };
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    setShowNotifications(false);
   };
 
   useEffect(() => {
@@ -515,7 +516,6 @@ const App: React.FC = () => {
           animate={{ opacity: 1 }}
           className="flex h-screen bg-slate-50 dark:bg-[#01040a] text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-300"
         >
-          {/* Mobile Overlay */}
           <AnimatePresence>
             {mobileMenuOpen && (
               <motion.div 
@@ -528,12 +528,11 @@ const App: React.FC = () => {
             )}
           </AnimatePresence>
 
-          {/* Compact Sidebar */}
           <aside className={`
             fixed lg:relative inset-y-0 left-0 z-[70] p-2
             ${sidebarOpen ? 'w-[200px]' : 'w-[72px]'} 
             ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] flex flex-col
+            transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] flex flex-col h-full
           `}>
             <div className="flex-1 glass-card rounded-2xl flex flex-col p-2 border border-black/5 dark:border-white/5 relative overflow-hidden">
               <button 
@@ -550,7 +549,7 @@ const App: React.FC = () => {
                   </div>
                   {sidebarOpen && (
                     <div className="text-left">
-                      <p className="font-black text-sm tracking-tighter text-slate-900 dark:text-white leading-none">HI<span className="text-blue-600 dark:text-blue-500">ET</span></p>
+                      <p className="font-black text-sm tracking-tighter text-slate-900 dark:text-white leading-none uppercase">HI<span className="text-blue-600 dark:text-blue-500">ET</span></p>
                     </div>
                   )}
                   {!sidebarOpen && (
@@ -608,10 +607,8 @@ const App: React.FC = () => {
             </div>
           </aside>
 
-          {/* Main Workspace */}
-          <main className="flex-1 flex flex-col relative h-screen">
-            {/* High-Fidelity Nav */}
-            <header className="h-14 sm:h-16 flex items-center justify-between px-6 sm:px-10 sticky top-0 z-50 bg-slate-50/80 dark:bg-[#01040a]/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5 transition-colors duration-300">
+          <main className="flex-1 flex flex-col relative h-full w-full">
+            <header className="h-14 sm:h-16 flex items-center justify-between px-6 sm:px-10 sticky top-0 z-50 bg-slate-50/80 dark:bg-[#01040a]/80 backdrop-blur-xl border-b border-black/5 dark:border-white/5 transition-colors duration-300 w-full shrink-0">
               <div className="flex items-center gap-4">
                 <button 
                   className="lg:hidden p-2 glass-card rounded-lg text-slate-900 dark:text-white" 
@@ -630,7 +627,6 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Central Nav Elements */}
               <div className="hidden md:flex items-center gap-1 bg-black/5 dark:bg-white/5 p-1 rounded-xl border border-black/5 dark:border-white/5">
                 <button className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-900 dark:text-white bg-white dark:bg-white/5 shadow-sm rounded-lg">Operational</button>
                 <button className="px-3 py-1.5 text-[8px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-600 hover:text-slate-900 dark:hover:text-white transition-colors">Performance</button>
@@ -645,57 +641,100 @@ const App: React.FC = () => {
                   {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </button>
 
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-black/5 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5">
-                   <div className="flex flex-col items-end">
-                      <p className="text-[6px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">Designation</p>
-                      <p className="text-[10px] font-black text-slate-900 dark:text-white">{currentUser?.name || 'Operative'}</p>
-                   </div>
-                   <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 p-px">
-                      <div className="w-full h-full bg-white dark:bg-slate-900 rounded-lg overflow-hidden">
-                        {currentUser?.picture ? <img src={currentUser.picture} className="w-full h-full object-cover" /> : <UserIcon className="w-full h-full p-1.5 text-slate-900 dark:text-white/50" />}
-                      </div>
-                   </div>
+                <div className="relative" ref={notificationRef}>
+                  <button 
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className={`p-2 glass-card rounded-xl transition-all shadow-sm relative ${showNotifications ? 'bg-blue-500/10 text-blue-600' : 'text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                  >
+                    <Bell className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse ring-2 ring-white dark:ring-[#01040a]"></span>
+                    )}
+                  </button>
+
+                  <AnimatePresence>
+                    {showNotifications && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="absolute right-0 mt-3 w-80 glass-card rounded-3xl border border-black/5 dark:border-white/10 shadow-2xl overflow-hidden z-[100]"
+                      >
+                        <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-white/50 dark:bg-black/50">
+                           <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white flex items-center gap-2">
+                             <Activity className="w-3 h-3 text-blue-600" /> System Buffer
+                           </h4>
+                           <div className="flex gap-2">
+                             <button onClick={markAllRead} className="text-[8px] font-bold text-blue-600 dark:text-blue-400 hover:underline">Mark read</button>
+                             <button onClick={clearNotifications} className="text-[8px] font-bold text-slate-400 hover:text-red-500 transition-colors">Clear all</button>
+                           </div>
+                        </div>
+                        <div className="max-h-80 overflow-y-auto custom-scrollbar p-2">
+                           {notifications.length > 0 ? notifications.map((n) => (
+                             <div key={n.id} className={`p-3.5 rounded-2xl mb-1 transition-all group relative ${n.read ? 'opacity-50' : 'bg-blue-500/5 border border-blue-500/10'}`}>
+                                <div className="flex items-start gap-3">
+                                   <div className={`mt-1 w-1.5 h-1.5 rounded-full shrink-0 ${n.type === 'success' ? 'bg-emerald-500' : n.type === 'alert' ? 'bg-amber-500' : 'bg-blue-500'}`}></div>
+                                   <div className="flex-1">
+                                      <div className="flex justify-between items-start gap-2">
+                                         <p className="text-[10px] font-black text-slate-900 dark:text-white leading-none">{n.title}</p>
+                                         <span className="text-[7px] font-bold text-slate-400 dark:text-slate-600 whitespace-nowrap uppercase tracking-widest">{n.timestamp}</span>
+                                      </div>
+                                      <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">{n.message}</p>
+                                   </div>
+                                </div>
+                             </div>
+                           )) : (
+                             <div className="py-12 flex flex-col items-center justify-center text-slate-300 dark:text-slate-700 gap-3">
+                                <Zap className="w-8 h-8 opacity-20" />
+                                <p className="text-[9px] font-black uppercase tracking-widest">Buffer Empty</p>
+                             </div>
+                           )}
+                        </div>
+                        <div className="p-3 bg-black/5 dark:bg-white/5 border-t border-black/5 dark:border-white/5 text-center">
+                           <button onClick={() => setShowNotifications(false)} className="text-[8px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">Close Protocol</button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-                <button className="p-2 glass-card rounded-xl text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors relative">
-                   <Bell className="w-4 h-4" />
-                   <span className="absolute top-2 right-2 w-1 h-1 bg-blue-600 rounded-full"></span>
-                </button>
               </div>
             </header>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-6 sm:px-10 py-6">
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={activeTool}
-                  initial={{ opacity: 0, scale: 0.99, y: 5 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.99, y: -5 }}
-                  transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="max-w-6xl mx-auto min-h-full"
-                >
-                  {activeTool === 'dashboard' && <Dashboard onSelect={handleToolSelect} usage={usageStats} />}
-                  {activeTool === 'chat' && <ChatTool />}
-                  {activeTool === 'summarizer' && <SummarizerTool />}
-                  {activeTool === 'ocr' && <OCRTool />}
-                  {activeTool === 'image-gen' && <ImageGenTool />}
-                  {activeTool === 'image-edit' && <ImageEditTool />}
-                  {activeTool === 'tts' && <TTSTool />}
-                  {activeTool === 'qr-scanner' && <QRScannerTool />}
-                  {activeTool === 'doc-hub' && <DocManagerTool />}
-                  {activeTool === 'video-gen' && <VideoGenTool />}
-                  {activeTool === 'live-companion' && <LiveCompanionTool />}
-                  {activeTool === 'global-search' && <SearchTool />}
-                  {activeTool === 'code-architect' && <CodeTool />}
-                  {activeTool === 'navigator' && <NavigatorTool />}
-                  {activeTool === 'audio-pulse' && <STTTool />}
-                  {activeTool === 'text-forge' && <TextForgeTool />}
-                  {activeTool === 'logic-solver' && <LogicSolverTool />}
-                  {activeTool === 'translate-matrix' && <TranslateTool />}
-                  {activeTool === 'sentiment-analyst' && <SentimentTool />}
-                  {activeTool === 'data-pulse' && <DataPulseTool />}
-                  {activeTool === 'math-solver' && <MathSolverTool />}
-                </motion.div>
-              </AnimatePresence>
+            <div className="flex-1 overflow-hidden relative w-full">
+              <div className="absolute inset-0 overflow-y-auto custom-scrollbar px-6 sm:px-10 py-6">
+                <AnimatePresence mode="wait">
+                  <motion.div 
+                    key={activeTool}
+                    initial={{ opacity: 0, scale: 0.99, y: 5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.99, y: -5 }}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    className="max-w-6xl mx-auto h-full flex flex-col"
+                  >
+                    {activeTool === 'dashboard' && <Dashboard onSelect={handleToolSelect} usage={usageStats} />}
+                    {activeTool === 'chat' && <ChatTool />}
+                    {activeTool === 'summarizer' && <SummarizerTool />}
+                    {activeTool === 'ocr' && <OCRTool />}
+                    {activeTool === 'image-gen' && <ImageGenTool />}
+                    {activeTool === 'image-edit' && <ImageEditTool />}
+                    {activeTool === 'tts' && <TTSTool />}
+                    {activeTool === 'qr-scanner' && <QRScannerTool />}
+                    {activeTool === 'doc-hub' && <DocManagerTool />}
+                    {activeTool === 'video-gen' && <VideoGenTool />}
+                    {activeTool === 'live-companion' && <LiveCompanionTool />}
+                    {activeTool === 'global-search' && <SearchTool />}
+                    {activeTool === 'code-architect' && <CodeTool />}
+                    {activeTool === 'navigator' && <NavigatorTool />}
+                    {activeTool === 'audio-pulse' && <STTTool />}
+                    {activeTool === 'text-forge' && <TextForgeTool />}
+                    {activeTool === 'logic-solver' && <LogicSolverTool />}
+                    {activeTool === 'translate-matrix' && <TranslateTool />}
+                    {activeTool === 'sentiment-analyst' && <SentimentTool />}
+                    {activeTool === 'data-pulse' && <DataPulseTool />}
+                    {activeTool === 'math-solver' && <MathSolverTool />}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </main>
         </motion.div>

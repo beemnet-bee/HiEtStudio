@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, User, Bot, Loader2, Paperclip, Mic, RefreshCcw, X, MicOff, Key } from 'lucide-react';
+import { Send, User, Bot, Loader2, Paperclip, Mic, RefreshCcw, X, MicOff, Key, FileText, ImageIcon } from 'lucide-react';
 import { GoogleGenAI, ChatSession } from "@google/genai";
 import { Message } from '../types';
 
@@ -13,6 +13,7 @@ const ChatTool: React.FC = () => {
   const [isListening, setIsListening] = useState(false);
   const [needsKey, setNeedsKey] = useState(false);
   const [attachment, setAttachment] = useState<string | null>(null);
+  const [attachmentName, setAttachmentName] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,7 +26,7 @@ const ChatTool: React.FC = () => {
       chatRef.current = ai.chats.create({
         model: 'gemini-3-pro-preview',
         config: { 
-          systemInstruction: 'You are a professional AI assistant in OmniTool Studio. You are helpful, precise, and creative. You can analyze images if provided.' 
+          systemInstruction: 'You are a professional AI assistant in OmniTool Studio. You are helpful, precise, and creative. You can analyze images if provided. For other files, refer to the user input.' 
         }
       });
     }
@@ -72,7 +73,10 @@ const ChatTool: React.FC = () => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => setAttachment(event.target?.result as string);
+      reader.onload = (event) => {
+        setAttachment(event.target?.result as string);
+        setAttachmentName(file.name);
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -81,10 +85,11 @@ const ChatTool: React.FC = () => {
     if ((!input.trim() && !attachment) || isStreaming) return;
     const currentInput = input;
     const currentAttachment = attachment;
-    const userMsg: Message = { role: 'user', content: currentInput || "Analyzed image context", image: currentAttachment || undefined };
+    const userMsg: Message = { role: 'user', content: currentInput || `Analyzed file: ${attachmentName}`, image: currentAttachment || undefined };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setAttachment(null);
+    setAttachmentName(null);
     setIsStreaming(true);
     setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
 
@@ -92,9 +97,15 @@ const ChatTool: React.FC = () => {
       const chat = getChatSession();
       let messagePayload: any;
       if (currentAttachment) {
-        const base64Data = currentAttachment.split(',')[1];
+        const parts = currentAttachment.split(',');
+        const base64Data = parts[1];
         const mimeType = currentAttachment.split(';')[0].split(':')[1];
-        messagePayload = { parts: [{ text: currentInput || "Describe this image." }, { inlineData: { data: base64Data, mimeType } }] };
+        messagePayload = { 
+          parts: [
+            { text: currentInput || `Please analyze this file: ${attachmentName}` }, 
+            { inlineData: { data: base64Data, mimeType } }
+          ] 
+        };
       } else {
         messagePayload = currentInput;
       }
@@ -150,7 +161,7 @@ const ChatTool: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-14rem)] md:h-[calc(100vh-18rem)] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-500 transition-colors duration-300">
+    <div className="flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-500 transition-colors duration-300">
       <div className="flex items-center justify-between px-6 py-3 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-white/5 shrink-0 transition-colors duration-300">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -166,7 +177,14 @@ const ChatTool: React.FC = () => {
               {msg.role === 'assistant' ? <Bot className="w-4 h-4 sm:w-4.5 sm:h-4.5" /> : <User className="w-4 h-4 sm:w-4.5 sm:h-4.5" />}
             </div>
             <div className={`max-w-[85%] sm:max-w-[80%] flex flex-col gap-2 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              {msg.image && <img src={msg.image} alt="User upload" className="rounded-xl border border-slate-200 dark:border-white/10 shadow-sm max-w-full sm:max-w-xs h-auto" />}
+              {msg.image && (
+                 msg.image.startsWith('data:image') ? 
+                 <img src={msg.image} alt="User upload" className="rounded-xl border border-slate-200 dark:border-white/10 shadow-sm max-w-full sm:max-w-xs h-auto" /> :
+                 <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-white/5 rounded-xl border border-black/5 dark:border-white/5">
+                    <FileText className="w-4 h-4 text-blue-500" />
+                    <span className="text-[10px] font-bold truncate max-w-[150px]">Embedded File</span>
+                 </div>
+              )}
               {msg.content && (
                 <div className={`p-3.5 sm:p-4.5 rounded-[1.25rem] md:rounded-[1.5rem] ${msg.role === 'assistant' ? 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xl rounded-tr-none'}`}>
                   <p className={`whitespace-pre-wrap text-xs sm:text-sm leading-relaxed font-medium ${isStreaming && i === messages.length - 1 ? 'typing-cursor' : ''}`}>{msg.content}</p>
@@ -181,14 +199,20 @@ const ChatTool: React.FC = () => {
         <div className="max-w-4xl mx-auto space-y-4">
           {attachment && (
             <div className="flex items-center gap-3 animate-in slide-in-from-bottom-2 duration-300">
-              <div className="relative"><img src={attachment} className="w-10 h-10 object-cover rounded-lg border border-blue-200 dark:border-blue-900/50" alt="Attachment" /><button onClick={() => setAttachment(null)} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg"><X className="w-2.5 h-2.5" /></button></div>
-              <span className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-600 tracking-widest">Image context ready</span>
+              <div className="relative">
+                {attachment.startsWith('data:image') ? 
+                  <img src={attachment} className="w-10 h-10 object-cover rounded-lg border border-blue-200 dark:border-blue-900/50" alt="Attachment" /> :
+                  <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center border border-blue-200 dark:border-blue-800"><FileText className="w-5 h-5 text-blue-600" /></div>
+                }
+                <button onClick={() => {setAttachment(null); setAttachmentName(null);}} className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-lg"><X className="w-2.5 h-2.5" /></button>
+              </div>
+              <span className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-600 tracking-widest truncate max-w-[200px]">{attachmentName || 'Asset ready'}</span>
             </div>
           )}
           <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-[1.75rem] p-1.5 pr-1.5 sm:pr-2 shadow-xl focus-within:border-blue-400 dark:focus-within:border-blue-500 transition-all duration-300">
-            <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileSelect} />
+            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
             <button onClick={() => fileInputRef.current?.click()} className="p-2.5 text-slate-400 dark:text-slate-500 hover:text-blue-600 transition-all"><Paperclip className="w-4.5 h-4.5" /></button>
-            <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder="Send a command..." className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none max-h-32" />
+            <textarea rows={1} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }} placeholder="Send a command or upload a file..." className="flex-1 bg-transparent border-none outline-none px-2 py-2 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 resize-none max-h-32 custom-scrollbar" />
             <div className="flex items-center gap-1 sm:gap-1.5">
               <button onClick={toggleListening} className={`p-2.5 rounded-full transition-all hidden sm:flex ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-600' : 'text-slate-400 dark:text-slate-500 hover:text-blue-600'}`}>{isListening ? <MicOff className="w-4.5 h-4.5" /> : <Mic className="w-4.5 h-4.5" />}</button>
               <button onClick={handleSend} disabled={isStreaming || (!input.trim() && !attachment)} className="p-2.5 sm:p-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-full transition-all shadow-lg active:scale-95 flex items-center justify-center">{isStreaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}</button>
