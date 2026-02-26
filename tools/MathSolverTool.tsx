@@ -232,9 +232,9 @@ const MathSolverTool: React.FC = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full animate-in fade-in slide-in-from-bottom-8 duration-700 transition-colors duration-300">
-      <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/5 flex flex-col gap-6 shadow-sm transition-colors duration-300">
-        <div className="flex items-center justify-between">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full animate-in fade-in slide-in-from-bottom-8 duration-700 transition-colors duration-300 min-h-0 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/5 flex flex-col gap-6 shadow-sm transition-colors duration-300 min-h-0">
+        <div className="flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-xl flex items-center justify-center">
               <Calculator className="w-5 h-5" />
@@ -250,10 +250,10 @@ const MathSolverTool: React.FC = () => {
           value={problem}
           onChange={(e) => setProblem(e.target.value)}
           placeholder="Solve x^2 - 4 = 0, Find derivative of sin(x)..."
-          className="flex-1 bg-slate-50 dark:bg-slate-800 rounded-[1.5rem] p-6 border border-slate-100 dark:border-white/5 outline-none focus:border-yellow-400 dark:focus:border-yellow-500 focus:bg-white dark:focus:bg-slate-800 transition-all text-xs font-semibold text-slate-800 dark:text-slate-100 resize-none shadow-inner"
+          className="flex-1 min-h-[150px] bg-slate-50 dark:bg-slate-800 rounded-[1.5rem] p-6 border border-slate-100 dark:border-white/5 outline-none focus:border-yellow-400 dark:focus:border-yellow-500 focus:bg-white dark:focus:bg-slate-800 transition-all text-xs font-semibold text-slate-800 dark:text-slate-100 resize-none shadow-inner custom-scrollbar"
         />
         
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 shrink-0">
           <button onClick={() => setProblem(prev => prev + " ∫ ")} className="py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Integral ∫</button>
           <button onClick={() => setProblem(prev => prev + " d/dx ")} className="py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-[9px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Derivative ∂</button>
         </div>
@@ -261,22 +261,22 @@ const MathSolverTool: React.FC = () => {
         <button
           onClick={handleSolve}
           disabled={isLoading || !problem.trim()}
-          className="py-4 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3 group"
+          className="py-4 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-3 group shrink-0"
         >
           {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sigma className="w-5 h-5 group-hover:rotate-12 transition-transform" />}
           <span>Synthesize Solution</span>
         </button>
       </div>
 
-      <div className="bg-slate-900 dark:bg-black p-8 rounded-[2.5rem] flex flex-col gap-6 shadow-2xl relative overflow-hidden transition-colors duration-300">
-        <div className="flex justify-between items-center relative z-10">
+      <div className="bg-slate-900 dark:bg-black p-8 rounded-[2.5rem] flex flex-col gap-6 shadow-2xl relative overflow-hidden transition-colors duration-300 min-h-0">
+        <div className="flex justify-between items-center relative z-10 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/10 text-white rounded-xl flex items-center justify-center">
               <TrendingUp className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-extrabold text-xl text-white tracking-tight">Logic Plotter</h3>
-              <p className="text-[9px] font-black text-white/30 uppercase tracking-widest mt-0.5">Interactive Spatial Map</p>
+              <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-0.5">Interactive Spatial Map</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -292,7 +292,7 @@ const MathSolverTool: React.FC = () => {
             {solution && (
               <button 
                 onClick={() => { navigator.clipboard.writeText(solution); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                className="px-4 py-2 bg-white text-slate-900 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-xl"
+                className="px-4 py-2 bg-white text-slate-900 rounded-lg font-black text-[9px] uppercase tracking-widest transition-all shadow-xl flex items-center gap-2 hover:scale-105 active:scale-95"
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? 'Captured' : 'Export'}
@@ -301,10 +301,10 @@ const MathSolverTool: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col gap-6 relative z-10 overflow-hidden">
+        <div className="flex-1 flex flex-col gap-6 relative z-10 overflow-hidden min-h-0">
           <div 
             ref={containerRef}
-            className={`h-[280px] bg-black/40 rounded-[1.5rem] border border-white/5 relative overflow-hidden cursor-${isPanning ? 'grabbing' : 'crosshair'}`}
+            className={`h-[280px] shrink-0 bg-black/40 rounded-[1.5rem] border border-white/5 relative overflow-hidden cursor-${isPanning ? 'grabbing' : 'crosshair'}`}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
@@ -342,7 +342,7 @@ const MathSolverTool: React.FC = () => {
              )}
           </div>
 
-          <div className="flex-1 bg-white/5 rounded-[1.5rem] p-6 border border-white/5 overflow-y-auto custom-scrollbar text-white/90 text-xs leading-relaxed whitespace-pre-wrap font-medium">
+          <div className="flex-1 bg-white/5 rounded-[1.5rem] p-6 border border-white/5 overflow-y-auto custom-scrollbar text-white/90 text-xs leading-relaxed whitespace-pre-wrap font-medium min-h-0 break-words">
             {isLoading ? (
                <div className="h-full flex flex-col items-center justify-center gap-5">
                  <div className="w-10 h-0.5 bg-yellow-500/20 rounded-full overflow-hidden">

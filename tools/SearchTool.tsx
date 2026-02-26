@@ -111,8 +111,8 @@ const SearchTool: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-14rem)] gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-      <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-sm flex flex-col items-center gap-6">
+    <div className="flex flex-col h-full gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 min-h-0">
+      <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-sm flex flex-col items-center gap-6 shrink-0">
         <div className="flex flex-col items-center text-center gap-2">
           <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-2xl flex items-center justify-center shadow-xl shadow-sky-600/5">
             <Globe className="w-6 h-6" />
@@ -123,7 +123,6 @@ const SearchTool: React.FC = () => {
           </div>
         </div>
         
-        {/* Category Filter Bar */}
         <div className="w-full max-w-3xl overflow-x-auto custom-scrollbar pb-2">
            <div className="flex items-center gap-1.5">
              <div className="flex items-center gap-2 mr-2 shrink-0">
@@ -162,9 +161,8 @@ const SearchTool: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden h-full">
-        {/* Main Conversation Feed */}
-        <div className="flex-1 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden flex flex-col transition-colors duration-300">
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden min-h-0">
+        <div className="flex-1 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden flex flex-col transition-colors duration-300 min-w-0">
           <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar" ref={scrollRef}>
             {messages.length === 0 && !isLoading && (
               <div className="h-full flex flex-col items-center justify-center text-slate-200 dark:text-slate-800 gap-4">
@@ -178,15 +176,15 @@ const SearchTool: React.FC = () => {
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${msg.role === 'assistant' ? 'bg-sky-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
                   {msg.role === 'assistant' ? <Globe className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
                 </div>
-                <div className={`max-w-[85%] flex flex-col gap-3 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                <div className={`max-w-[85%] flex flex-col gap-3 ${msg.role === 'user' ? 'items-end' : 'items-start'} min-w-0`}>
                   <div className={`p-5 rounded-[1.5rem] shadow-sm ${msg.role === 'assistant' ? 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none' : 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-tr-none'}`}>
-                    <p className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed font-medium tracking-tight ai-output-text">
+                    <p className="whitespace-pre-wrap text-xs sm:text-sm leading-relaxed font-medium tracking-tight ai-output-text break-words">
                       {msg.content}
                     </p>
                   </div>
 
                   {msg.groundingChunks && msg.groundingChunks.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 w-full">
                       {msg.groundingChunks.map((chunk, ci) => (
                         chunk.web && (
                           <a 
@@ -194,10 +192,10 @@ const SearchTool: React.FC = () => {
                             href={chunk.web.uri}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 rounded-lg text-[9px] font-black uppercase hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all shadow-sm group"
+                            className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-500/20 rounded-lg text-[9px] font-black uppercase hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-all shadow-sm group truncate max-w-full"
                           >
-                            <ExternalLink className="w-2.5 h-2.5 group-hover:scale-110 transition-transform" />
-                            {chunk.web.title || "Reference Source"}
+                            <ExternalLink className="w-2.5 h-2.5 group-hover:scale-110 transition-transform shrink-0" />
+                            <span className="truncate">{chunk.web.title || "Reference Source"}</span>
                           </a>
                         )
                       ))}
@@ -225,8 +223,7 @@ const SearchTool: React.FC = () => {
           </div>
         </div>
 
-        {/* Discovery Sidebar */}
-        <div className="hidden xl:flex w-72 bg-slate-900 dark:bg-black rounded-[2.5rem] p-8 flex-col gap-6 shadow-2xl transition-colors duration-300">
+        <div className="hidden xl:flex w-72 bg-slate-900 dark:bg-black rounded-[2.5rem] p-8 flex-col gap-6 shadow-2xl transition-colors duration-300 shrink-0">
            <div className="space-y-1">
              <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-sky-400" />
@@ -235,19 +232,19 @@ const SearchTool: React.FC = () => {
              <p className="text-[8px] font-bold text-white/30 uppercase tracking-[0.2em]">Suggested Probes</p>
            </div>
            
-           <div className="space-y-2">
+           <div className="space-y-2 overflow-y-auto custom-scrollbar">
               {suggestions.map((s, i) => (
                 <button 
                   key={i} 
                   onClick={() => { setQuery(s); handleSearch(); }}
                   className="w-full text-left p-3.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-sky-500/50 transition-all group"
                 >
-                  <p className="text-[10px] font-bold text-white/80 group-hover:text-sky-400 transition-colors leading-relaxed">{s}</p>
+                  <p className="text-[10px] font-bold text-white/80 group-hover:text-sky-400 transition-colors leading-relaxed line-clamp-2">{s}</p>
                 </button>
               ))}
            </div>
 
-           <div className="mt-auto bg-white/5 p-4 rounded-2xl border border-white/5">
+           <div className="mt-auto bg-white/5 p-4 rounded-2xl border border-white/5 shrink-0">
               <div className="flex items-center gap-2 mb-2">
                  <Info className="w-3 h-3 text-sky-400" />
                  <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Grounding Note</span>
